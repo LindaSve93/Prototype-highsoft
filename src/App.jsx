@@ -2,7 +2,9 @@ import { useState } from 'react'
 import './App.css'
 
 function App() {
-  const [selectedPlan, setSelectedPlan] = useState('annual-adv')
+  const [selectedPlan, setSelectedPlan] = useState('subscription')
+  const [premiumSupport, setPremiumSupport] = useState(false)
+
 
   const topPlans = [
     {
@@ -27,22 +29,20 @@ function App() {
 
   const bottomPlans = [
     {
-      id: 'annual-adv',
-      title: 'Subscription + Support',
-      description: 'Pay yearly for continuous access to latest versions and support. Active subscription required for software use.',
-      price: '+ $0'
-    },
-    {
-      id: 'annual-advplus',
-      title: 'Subscription + Premium Support',
-      description: 'Annual subscription with premium support, latest releases, and dedicated engineering guidance.',
-      price: '+ $487'
+      id: 'subscription',
+      title: 'Yearly Subscription',
+      description: 'Access to support and updates for a yearly payment. Your right to use the software requires an active subscription.',
+      basePrice: '$0',
+      premiumPrice: '$121',
+      hasPremiumOption: true,
+      badge: 'Rented'
     },
     {
       id: 'perpetual-advplus',
-      title: 'Pay once + Premium Support for 1 year',
-      description: 'Own forever with one payment. Includes 1 year of updates and premium support. Continue using your version indefinitely.',
-      price: '+ $839'
+      title: 'Lifetime License',
+      description: 'Own it outright. Get 1 year of updates included, then keep using it forever with no recurring costs.',
+      price: '+ $473',
+      badge: 'Owned'
     }
   ]
 
@@ -119,29 +119,67 @@ function App() {
       </div>
 
       <div className="compact-plans-section">
-        <h2 className="section-heading">How would you pay?</h2>
+        <h2 className="section-heading">Rent or own?</h2>
         <div className="compact-plans-list">
-          {bottomPlans.map((plan) => (
-            <div 
-              key={`compact-${plan.id}`} 
-              className="compact-plan-item"
-              onClick={() => setSelectedPlan(plan.id)}
-            >
-              <input
-                type="radio"
-                name="plan"
-                value={plan.id}
-                checked={selectedPlan === plan.id}
-                onChange={() => setSelectedPlan(plan.id)}
-                className="compact-plan-radio"
-              />
-              <div className="compact-plan-content">
-                <h3 className="compact-plan-title">{plan.title}</h3>
-                <p className="compact-plan-description">{plan.description}</p>
+          {bottomPlans.map((plan) => {
+            const isSelected = selectedPlan === plan.id
+            const displayPrice = plan.hasPremiumOption
+              ? `+ ${plan.basePrice}`
+              : plan.price
+
+            return (
+              <div
+                key={`compact-${plan.id}-${selectedPlan}`}
+                className={`compact-plan-item ${isSelected ? 'selected' : ''}`}
+              >
+                <div
+                  className="compact-plan-main"
+                >
+                  <input
+                    type="radio"
+                    name="plan"
+                    value={plan.id}
+                    checked={isSelected}
+                    onChange={(e) => {
+                      setSelectedPlan(e.target.value)
+                      if (!plan.hasPremiumOption) {
+                        setPremiumSupport(false)
+                      }
+                    }}
+                    className="compact-plan-radio"
+                  />
+                  <div className="compact-plan-content">
+                    <div className="plan-header-with-badge">
+                      <h3 className="compact-plan-title">{plan.title}</h3>
+                      {plan.badge && <span className={`plan-badge badge-${plan.badge.toLowerCase()}`}>{plan.badge}</span>}
+                    </div>
+                    <p className="compact-plan-description">{plan.description}</p>
+                  </div>
+                  <div className="compact-plan-price">{displayPrice}</div>
+                </div>
+
+                {plan.hasPremiumOption && (
+                  <label className="premium-support-option" style={{ opacity: selectedPlan === plan.id ? 1 : 0.5, pointerEvents: selectedPlan === plan.id ? 'auto' : 'none' }}>
+                    <input
+                      type="checkbox"
+                      checked={premiumSupport}
+                      onChange={(e) => {
+                        e.stopPropagation()
+                        setPremiumSupport(e.target.checked)
+                      }}
+                      disabled={selectedPlan !== plan.id}
+                      className="premium-support-input"
+                    />
+                    <span className="checkbox-label">
+                      <span className="checkbox-title">Advantage+</span>
+                      <span className="checkbox-description">20 hours support per year</span>
+                    </span>
+                    <span className="checkbox-price">+ {plan.premiumPrice}</span>
+                  </label>
+                )}
               </div>
-              <div className="compact-plan-price">{plan.price}</div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>
